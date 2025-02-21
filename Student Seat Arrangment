@@ -5,7 +5,7 @@ public class Solution {
     public static int solve(int n, List<Integer> a) {
         // Sort the seat positions.
         Collections.sort(a);
-        
+         
         int maxInWindow = 0;
         int j = 0;
         // Use a sliding window: for each starting index i, find how many students
