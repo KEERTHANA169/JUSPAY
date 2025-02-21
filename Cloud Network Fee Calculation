@@ -1,0 +1,73 @@
+import java.util.*;
+
+public class Solution {
+    private static Map<Long, Integer> feeMap = new HashMap<>();
+    private static long totalCost = 0;
+
+    public static int solve(int q, List<List<Integer>> events) {
+        for (List<Integer> event : events) {
+            if (event.size() < 3) continue; // Skip invalid events
+
+            int type = event.get(0);
+            int a = event.get(1);
+            int b = event.get(2);
+
+            if (type == 1 && event.size() == 4) { // Fee Update
+                int x = event.get(3);
+                addFee(a, b, x);
+            } else if (type == 2) { // Data Transfer
+                totalCost += getFee(a, b);
+            }
+        }
+        return (int) totalCost;
+    }
+
+    private static void addFee(int a, int b, int x) {
+        while (a != b) {
+            if (a > b) {
+                feeMap.put((long) a, feeMap.getOrDefault((long) a, 0) + x);
+                a /= 2;
+            } else {
+                feeMap.put((long) b, feeMap.getOrDefault((long) b, 0) + x);
+                b /= 2;
+            }
+        }
+    }
+
+    private static long getFee(int a, int b) {
+        long cost = 0;
+        while (a != b) {
+            if (a > b) {
+                cost += feeMap.getOrDefault((long) a, 0);
+                a /= 2;
+            } else {
+                cost += feeMap.getOrDefault((long) b, 0);
+                b /= 2;
+            }
+        }
+        return cost;
+    }
+
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        int q = Integer.parseInt(scan.nextLine().trim());
+
+        List<List<Integer>> events = new ArrayList<>();
+        for (int i = 0; i < q; i++) {
+            String[] input = scan.nextLine().trim().split(" ");
+            List<Integer> event = new ArrayList<>();
+            for (String s : input) {
+                if (!s.isEmpty()) {  // Prevent parsing errors on empty strings
+                    event.add(Integer.parseInt(s));
+                }
+            }
+            if (!event.isEmpty()) {
+                events.add(event);
+            }
+        }
+
+        int result = solve(q, events);
+        System.out.println(result);
+        scan.close();
+    }
+}
