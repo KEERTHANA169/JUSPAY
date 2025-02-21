@@ -1,0 +1,45 @@
+import java.util.*;
+
+public class Solution {
+    
+    public static int solve(int n, List<Integer> a) {
+        // Sort the seat positions.
+        Collections.sort(a);
+        
+        int maxInWindow = 0;
+        int j = 0;
+        
+        // Use a sliding window: for each starting index i, find how many students
+        // are within a block of n consecutive seats (i.e. a[j] - a[i] <= n - 1).
+        for (int i = 0; i < n; i++) {
+            // Extend the window as far as possible.
+            while (j < n && a.get(j) - a.get(i) <= n - 1) {
+                j++;
+            }
+            // Update the maximum number of students found in any valid window.
+            maxInWindow = Math.max(maxInWindow, j - i);
+        }
+        
+        // The minimum moves is the number of students that need to be moved.
+        return n - maxInWindow;
+    }
+    
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        
+        // Read the number of students.
+        int n = Integer.parseInt(scan.nextLine().trim());
+        List<Integer> a = new ArrayList<>();
+        
+        // Read the seat positions.
+        for (int i = 0; i < n; i++) {
+            a.add(Integer.parseInt(scan.nextLine().trim()));
+        }
+        
+        int result = solve(n, a);
+        System.out.println(result);
+        
+        scan.close();
+    }
+}
+
