@@ -8,7 +8,6 @@ public class Solution {
         
         int maxInWindow = 0;
         int j = 0;
-        
         // Use a sliding window: for each starting index i, find how many students
         // are within a block of n consecutive seats (i.e. a[j] - a[i] <= n - 1).
         for (int i = 0; i < n; i++) {
