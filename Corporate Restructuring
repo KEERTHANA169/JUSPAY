@@ -3,7 +3,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class Solution { 
-
+ 
     public static List<Integer> isCompliant(int n, List<List<Integer>> arr) {
         // Arrays to store supervisor and compliance flag for each employee (1-indexed)
         int[] parent = new int[n + 1];
