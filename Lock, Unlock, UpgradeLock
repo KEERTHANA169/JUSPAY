@@ -1,0 +1,115 @@
+import java.util.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+public class Solution {
+
+    public static List<Integer> isCompliant(int n, List<List<Integer>> arr) {
+        // Arrays to store supervisor and compliance flag for each employee (1-indexed)
+        int[] parent = new int[n + 1];
+        int[] compliance = new int[n + 1];
+        // Create children lists (for each employee, list of direct reports)
+        @SuppressWarnings("unchecked")
+        List<Integer>[] children = new ArrayList[n + 1];
+        for (int i = 1; i <= n; i++) {
+            children[i] = new ArrayList<>();
+        }
+        
+        int root = -1; // the CEO (with parent = -1)
+        // Populate the parent and compliance arrays and build the children list.
+        // Employee IDs are 1-indexed and correspond to arr index (i-1).
+        for (int i = 1; i <= n; i++) {
+            List<Integer> details = arr.get(i - 1);
+            int p = details.get(0);
+            int c = details.get(1);
+            parent[i] = p;
+            compliance[i] = c;
+            if (p == -1) {
+                root = i;  // CEO found
+            } else {
+                children[p].add(i);
+            }
+        }
+        
+        // Priority queue to pick the smallest eligible non-compliant employee.
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        // Track removal status.
+        boolean[] removed = new boolean[n + 1];
+        
+        // Initially, add every non-compliant employee that is eligible.
+        for (int i = 1; i <= n; i++) {
+            if (compliance[i] == 1 && isEligible(i, children, compliance, removed)) {
+                pq.offer(i);
+            }
+        }
+        
+        List<Integer> removalOrder = new ArrayList<>();
+        
+        // Process removals until no eligible employee remains.
+        while (!pq.isEmpty()) {
+            int emp = pq.poll();
+            // Check if emp is still eligible (it may have changed since it was added)
+            if (removed[emp] || compliance[emp] != 1 || !isEligible(emp, children, compliance, removed))
+                continue;
+            
+            // Remove employee emp.
+            removed[emp] = true;
+            removalOrder.add(emp);
+            
+            int par = parent[emp];
+            if (par != -1) {
+                // Remove emp from parent's children list.
+                children[par].remove(Integer.valueOf(emp));
+                // Reassign emp's children to its supervisor.
+                List<Integer> childList = new ArrayList<>(children[emp]);
+                for (int child : childList) {
+                    parent[child] = par;
+                    children[par].add(child);
+                }
+                // Clear emp's children list.
+                children[emp].clear();
+                
+                // After reassigning, parent's eligibility might have changed.
+                if (compliance[par] == 1 && isEligible(par, children, compliance, removed)) {
+                    pq.offer(par);
+                }
+            }
+        }
+        
+        // If no removal occurred, return list with -1.
+        if (removalOrder.isEmpty()) {
+            removalOrder.add(-1);
+        }
+        return removalOrder;
+    }
+    
+    // Helper method to check if a given employee is eligible for removal.
+    // An employee is eligible if it is non-compliant (compliance flag 1) and none of its direct children (still active)
+    // is compliant (flag 0).
+    private static boolean isEligible(int emp, List<Integer>[] children, int[] compliance, boolean[] removed) {
+        for (int child : children[emp]) {
+            if (!removed[child] && compliance[child] == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        int N = Integer.parseInt(scan.nextLine().trim());
+        List<List<Integer>> arr = new ArrayList<>(N);
+        
+        // Read each employee's details. Each line has two space-separated integers.
+        for (int i = 0; i < N; i++) {
+            arr.add(Arrays.asList(scan.nextLine().trim().split(" "))
+                .stream().map(s -> Integer.parseInt(s)).collect(toList()));
+        }
+        
+        List<Integer> result = isCompliant(N, arr);
+        for (int j = 0; j < result.size(); j++) {
+            System.out.println(result.get(j));
+        }
+    }
+}
+
