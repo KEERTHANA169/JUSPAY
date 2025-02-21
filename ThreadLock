@@ -1,0 +1,115 @@
+import java.util.*;
+
+class Node{
+  private int value;
+  private Node parent;
+  private boolean isLocked = false;
+  private int lockOwner = -1;
+  private List<Integer> waitingThreads =new ArrayList<>();
+  private int childLocks=0;
+  private int readCount=0;
+
+  public Node(int value, Node parent){
+    this.value = value;
+    this.parent = parent;
+  }
+
+  private boolean canlock(){
+    return (childLocks == 0 && !isLocked && readCount ==0);
+  }
+
+  public boolean readLock(int threadId){
+    while(true){
+      if(!isLocked){
+        readCount++;
+        return true;
+      }
+      else{
+        for(int i=0;i<1000000;i++){
+          //spinlock delay
+        }
+      }
+    }
+  }
+
+    public void readUnlock(){
+      if(readCount>0){
+        readCount--;
+      }
+    }
+
+    public boolean writeLock(int threadId){
+      while(true){
+        if(canLock()){
+          isLocked=true;
+          lockOwner=threadId;
+
+          Node node=parent;
+          while(node!=null){
+            node.childLocks++;
+            node=node.parent;
+          }
+          return true;
+        }
+        else{
+          waitingThreads.add(threadId);
+          for(int i=0;i<1000000;i++){
+            //spinlock delay
+          }
+        }
+      }
+    }
+
+    public  void unlock(int threadId){
+      if(lockOwner == threadId){
+        islocked=false;
+        lockOwner=-1;
+
+        Node node=parent;
+        while(node!=null){
+          node.childLocks--;
+          node=node.parent;
+        }
+      }
+      else if(readCount>0){
+        readCount--;
+      }
+        waitingThreads.clear();
+      }
+
+    public boolean upgrade(int threadId){
+      if(readCount ==1 && !isLocked){
+        readUnlock();
+        return writeLock(threadId);
+      }
+      return false;
+  }
+}
+
+
+public class TreeLockTest{
+  public static void main(String[] args){
+    Node root = new Node(1,null);
+    Node child1 = new Node(2,root);
+    Node child2 = new Node(3,root);
+    Runnable task1=() ->{
+      if(child1.readLock(1)){
+      System.out.println("Child1 is read-locked by thread1");
+        if(child1.upgrade(1)){
+          System.out.println("Child1 is upgraded to write-lock by thread1");
+        }
+      child1.unlock(1);
+    }
+    };
+    Runnable task2=() ->{
+      if(child2.writeLock(2)){
+      System.out.println("Child2 writelocked by thread2");
+      child1.unlock(2);
+      }  
+    };
+Thread t1=new Thread(task1,"Thread1");
+Thread t2 = new Thread(task2,"Thread2");
+
+t1.start();
+t2.start();
+}
