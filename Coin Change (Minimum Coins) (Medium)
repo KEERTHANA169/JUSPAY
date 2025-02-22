@@ -1,0 +1,29 @@
+public int minCoins(int coins[], int sum) {
+        int num=sum;
+        //if sum is 0
+        if(sum==0) return 0;
+        
+        //if given minimum coin is greater than given sum and sum is less than 0
+        int smallcoin=  Integer.MAX_VALUE;
+        for(int coin:coins)
+        {
+            smallcoin=Math.min(smallcoin,coin);
+        }
+        if(sum<smallcoin) return -1;
+        
+        //taking sum in all possible ways by keep coun of each coin and find the minimumm coin required to sum i
+        int[] count= new int[sum+1];
+        Arrays.fill(count,Integer.MAX_VALUE);
+        count[0]=0;
+        
+       
+        for(int i=1;i<=sum;i++){
+        for(int coin:coins)
+        {
+            if(i>=coin && count[i-coin]!=Integer.MAX_VALUE){
+                count[i]=Math.min(count[i],count[i-coin]+1);
+            }
+        }
+        }
+        return count[sum]==Integer.MAX_VALUE?-1:count[sum]; 
+    }
